@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %} Admin Dashboard {% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
     
     <section>
         <h2><a href="">Customers</a></h2>
-        <h2><a href="">Assistants</a></h2> 
+        <h2><a href="{% url 'assistant_list'%}">Assistants</a></h2> 
         {% comment %}
             "{% url 'assistants' %}
         {% endcomment %}

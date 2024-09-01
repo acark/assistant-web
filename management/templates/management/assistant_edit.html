@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_body %}
+    <h1>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Assistant</h1>
+    <!-- Form for creating or editing an assistant -->
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+    <a href="{% url 'home' %}">Go back</a>
+    <!-- Display any errors if they exist -->
+    {% if form.errors %}
+        <div class="errors">
+            <h2>Form Errors:</h2>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field }}:</strong> {{ errors }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    <!-- Form for selecting an existing assistant -->
+    <form method="get" action="{% url 'assistant_edit' slug=selected_assistant.slug %}">
+        <label for="selected_assistant">Choose an Assistant:</label>
+        <select id="selected_assistant" name="slug" onchange="this.form.submit()">
+            <option value="">-- Select an Assistant --</option>
+            {% for assistant in assistants %}
+            <option value="{{ selected_assistant.slug }}" {% if selected_assistant and selected_assistant.slug == assistant.slug %}selected{% endif %}>
+                {{ assistant.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    
+{% endblock extra_body %}

@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
+
+## These are JSON format like objects in python. 
 class TranscriberConfig(BaseModel):
     provider: str
     model: str

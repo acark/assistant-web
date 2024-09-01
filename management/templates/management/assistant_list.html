@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Admin Dashboard {% endblock %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+{% if user.is_authenticated %}
+<table>
+    <thead>
+        <tr>
+            <th>Slug</th>
+            <th>Assistant ID</th>
+            <th>Name</th>
+            <th>Organization ID</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for assistant in assistants %}
+        <tr>
+            <form method="post" action="">
+
+    
+            <td><a href="{% url 'assistant_edit' slug=assistant.slug %}">{{ assistant.id }}</a></td>
+  
+            <td>{{ assistant.name }}</td>
+            <td>{{ assistant.org_id }}</td>
+            <td>{{ assistant.created_at }}</td>
+            <td>{{ assistant.updated_at }}</td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+
+
+
+    
+
+{% else %}
+    <p>Please <a href="{% url 'login_page' %}">log in</a> to access the admin dashboard.</p>
+{% endif %}
+{% endblock %}

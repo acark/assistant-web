@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Web Assistant Admin Site{% endblock %}</title>
     {% block extra_head %}{% endblock %}
-    
+
 </head>
 <body>
     <header>
@@ -14,7 +14,7 @@
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'protected_view' %}">Protected</a></li>
+                    <li><a href="{% url 'account_details' %}">Account_details</a></li>
                     <li><a href="{% url 'logout' %}">Logout</a></li>
                 {% else %}
                     <li><a href="{% url 'login_page' %}">Login</a></li>
@@ -34,7 +34,34 @@
         {% endif %}
 
         {% block content %}
+       
+        {% if user.is_authenticated %}
+        <section>
+            <h2>Recent Activity</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in user_activities %}
+                    <tr>
+                        <td>{{ activity.date }}</td>
+                        <td>{{ activity.action }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2">No recent activity</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {%endif%}
         {% endblock %}
+       
     </main>
 
     <footer>
@@ -44,5 +71,6 @@
     </footer>
 
     {% block extra_body %}{% endblock %}
+   
 </body>
 </html>

@@ -50,11 +50,6 @@ def test_create_assistant():
         logger.error(f"Unexpected error: {str(e)}")
 
 
-def test_update_assisant():
-    
-    assistant = VAPIAssistant().get_assistant()
-    
-
 
 if __name__ == "__main__":
     logger.info(f"Using API URL: {settings.VAPI_API_URL}")
