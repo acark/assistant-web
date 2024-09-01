@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Web Assistant Admin Site{% endblock %}
+
+{% block content %}
+<div class="welcome-container">
+    <h1>Welcome to Web Assistant Admin Site</h1>
+    <p>This is the administration portal for managing your web assistant services.</p>
+    
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}! You are already logged in.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Go to Dashboard</a>
+    {% else %}
+        <p>Please log in to access the admin features.</p>
+        <a href="{% url 'login_page' %}" class="btn btn-primary">Log In</a>
+        
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .welcome-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+    }
+    .welcome-container h1 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .welcome-container p {
+        color: #666;
+        margin-bottom: 20px;
+    }
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+</style>
+{% endblock %}

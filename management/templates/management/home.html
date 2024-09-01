@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %} Admin Dashboard {% endblock %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+{% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+    
+    <section>
+        <h2><a href="">Customers</a></h2>
+        <h2><a href="">Assistants</a></h2> 
+        {% comment %}
+            "{% url 'assistants' %}
+        {% endcomment %}
+    </section>
+
+    <section>
+        <h2>Recent Activity</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- This would typically be populated dynamically -->
+                <tr>
+                    <td>2024-09-01</td>
+                    <td>admin</td>
+                    <td>User account created</td>
+                </tr>
+                <tr>
+                    <td>2024-09-01</td>
+                    <td>manager1</td>
+                    <td>Report generated</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>System Status</h2>
+        <ul>
+            <li>Users Online: 5</li>
+            <li>Pending Tasks: 3</li>
+            <li>System Load: Normal</li>
+        </ul>
+    </section>
+
+{% else %}
+    <p>Please <a href="{% url 'login_page' %}">log in</a> to access the admin dashboard.</p>
+{% endif %}
+{% endblock %}
