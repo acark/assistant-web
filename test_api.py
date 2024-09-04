@@ -16,28 +16,41 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def test_create_assistant():
-    assistant = VAPIAssistant()
+    vapi = VAPIAssistant()
     try:
-        response = assistant.create_assistant(
-            name="Test Assistant",
-            first_message="Ben Test Assistant, Size nasıl yardımcı olabilirim?",
-            transcriber={"model": "nova-2-general", "language": "tr", "provider": "deepgram"},
-            model={
-                "model": "gpt-4o",
-                "provider": "openai",
-                "emotionRecognitionEnabled": True,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are a helpful assistant."
-                    }
-                ]
+        assistant = vapi.create_assistant(
+            name="Test Assistantasd",
+            first_message="Hello, how can I assist you today?",
+            transcriber={
+                "provider": "deepgram",
+                "model": "nova-2",
+                "language": "en",
+                "smartFormat": False,
+                "endpointing": 500
             },
-            voice={"voiceId": "onyx", "provider": "openai"},
-            endCallPhrases=["Gorusuruz."]
+            model={
+                "provider": "openai",
+                "model": "chat",
+                "temperature": 0.7,
+                "maxTokens": 1000,
+                "emotionRecognitionEnabled": True,
+                "numFastTurns": 0
+            },
+            voice={
+                "provider": "playht",
+                "voiceId": "jennifer"
+            },
+            backgroundSound="office",
+            silenceTimeoutSeconds=30,
+            maxDurationSeconds=600,
+            endCallPhrases=["Goodbye", "Thank you for calling"],
+            voicemailDetection={
+                "enabled": True,
+                "provider": "twilio"
+            }
         )
         logger.info("Assistant created successfully:")
-        logger.info(json.dumps(response, indent=2))
+        assistant.save_to_db()
     except RequestException as e:
         logger.error(f"Error creating assistant: {str(e)}")
         if e.response is not None:
@@ -49,9 +62,6 @@ def test_create_assistant():
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
 
-
-
 if __name__ == "__main__":
     logger.info(f"Using API URL: {settings.VAPI_API_URL}")
     test_create_assistant()
-    test_update_assisant()

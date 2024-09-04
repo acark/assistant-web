@@ -1,25 +1,37 @@
 
 from django.contrib import admin
-from .models import Assistant
+from .models import AssistantModel
+from django.contrib.admin.sites import AlreadyRegistered
+@admin.register(AssistantModel)
 class AssistantAdmin(admin.ModelAdmin):
-    list_display = ('id', 'org_id', 'name', 'voice', 'created_at', 'updated_at', 'recording_enabled', 'transcriber')
-    search_fields = ('id', 'org_id', 'name', 'voice', 'transcriber')
-    list_filter = ('recording_enabled', 'is_server_url_secret_set')
-    readonly_fields = ('created_at', 'updated_at')
-
+    list_display = ('name', 'id', 'created_at', 'updated_at')
+    search_fields = ('name', 'id')
+    readonly_fields = ('id', 'org_id', 'created_at', 'updated_at', 'slug')
     fieldsets = (
         (None, {
-            'fields': ('id', 'org_id', 'name', 'voice', 'model', 'recording_enabled', 'background_sound', 'is_server_url_secret_set')
+            'fields': ('id', 'org_id', 'name', 'slug', 'created_at', 'updated_at')
         }),
-        ('Messages', {
-            'fields': ('first_message', 'voicemail_message', 'end_call_message')
+        ('Configuration', {
+            'fields': ('voice', 'model', 'transcriber', 'first_message', 'first_message_mode', 'voicemail_message', 'end_call_message')
         }),
-        ('Transcription', {
-            'fields': ('transcriber', 'client_messages', 'server_messages', 'end_call_phrases', 'num_words_to_interrupt_assistant')
+        ('Settings', {
+            'fields': ('recording_enabled', 'hipaa_enabled', 'backchanneling_enabled', 'background_denoising_enabled', 'model_output_in_messages_enabled', 'is_server_url_secret_set')
         }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at')
+        ('Timeouts and Limits', {
+            'fields': ('silence_timeout_seconds', 'max_duration_seconds', 'num_words_to_interrupt_assistant')
+        }),
+        ('Messages and Phrases', {
+            'fields': ('client_messages', 'server_messages', 'end_call_phrases')
+        }),
+        ('Other', {
+            'fields': ('background_sound', 'voicemail_detection')
         }),
     )
 
-admin.site.register(Assistant, AssistantAdmin)
+    def has_add_permission(self, request):
+        return False  # Disable adding new assistants through admin
+
+try:
+    admin.site.register(AssistantModel, AssistantAdmin)
+except AlreadyRegistered:
+    pass  # Model has already been registered

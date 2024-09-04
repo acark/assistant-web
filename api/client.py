@@ -11,17 +11,19 @@ class APIClient:
             "Authorization": f"Bearer {settings.VAPI_API_TOKEN}",
             "Content-Type": "application/json"
         }
+
     def _make_request(self, method, endpoint, payload=None):
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         logger.debug(f"Sending {method} request to {url}")
         if payload:
             logger.debug(f"Request payload: {payload}")
+
         try:
             if method == 'GET':
                 response = requests.get(url, headers=self.headers)
             elif method == 'POST':
                 response = requests.post(url, json=payload, headers=self.headers)
-            elif method == 'PUT': # PATCH
+            elif method == 'PUT':
                 response = requests.put(url, json=payload, headers=self.headers)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=self.headers)

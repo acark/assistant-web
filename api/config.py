@@ -1,12 +1,7 @@
-
-
-## This should be taken from front-side
 DEFAULT_TRANSCRIBER_CONFIG = {
-    "provider": "deepgram",
-    "model": "nova-2",
-    "language": "bg",
-    "smartFormat": False,
-    "endpointing": 255
+    "model": "nova-2-general",
+    "language": "tr",
+    "provider": "deepgram"
 }
 
 DEFAULT_MODEL_CONFIG = {
@@ -17,7 +12,7 @@ DEFAULT_MODEL_CONFIG = {
     "messages": [
         {
             "role": "system",
-            "content": "Default system message content"
+            "content": "!!!Promt!!!"
         }
     ]
 }

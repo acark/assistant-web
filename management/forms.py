@@ -1,9 +1,9 @@
 from django import forms
-from .models import Assistant
+from .models import AssistantModel
 
 class AssistantForm(forms.ModelForm):
     class Meta:
-        model = Assistant
+        model = AssistantModel
         fields = '__all__'  # Include all fields from the model
 
     def __init__(self, *args, **kwargs):

@@ -9,31 +9,38 @@
 <table>
     <thead>
         <tr>
-            <th>Slug</th>
-            <th>Assistant ID</th>
-            <th>Name</th>
-            <th>Organization ID</th>
-            <th>Created At</th>
-            <th>Updated At</th>
+            <th>name</th>
+            <th>Assistant org id</th>
+            <th>Created_at</th>
+            <th>Updated_at ID</th>
+
         </tr>
     </thead>
-    <tbody>
+    <section>
         
-        {% for assistant in assistants %}
-        <tr>
-            <form method="post" action="">
-
+        <tbody>
+            {% for assistant in assistants %}
+            <tr>
+                <form method="post" action="">
     
-            <td><a href="{% url 'assistant_edit' slug=assistant.slug %}">{{ assistant.id }}</a></td>
-  
-            <td>{{ assistant.name }}</td>
-            <td>{{ assistant.org_id }}</td>
-            <td>{{ assistant.created_at }}</td>
-            <td>{{ assistant.updated_at }}</td>
-        </tr>
-        {% endfor %}
-
-    </tbody>
+        
+                <td><a href="{% url 'assistant_edit' slug=assistant.id %}">{{ assistant.id }}</a></td>
+      
+                <td>{{ assistant.name }}</td>
+                <td>{{ assistant.org_id }}</td>
+                <td>{{ assistant.created_at }}</td>
+                <td>{{ assistant.updated_at }}</td>
+            </tr>
+            {% endfor %}
+    
+        </tbody>
+        <h1>Create New Assistant</h1>
+            <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+        <button type="submit">Create Assistant</button>
+</form>
+    </section>
 </table>
 
 
