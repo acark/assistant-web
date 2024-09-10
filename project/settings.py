@@ -40,13 +40,13 @@ VAPI_API_URL = 'https://api.vapi.ai/'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '8142-2a02-ab88-c93-2300-1550-2d46-cbb3-ff4c.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ['https://8142-2a02-ab88-c93-2300-1550-2d46-cbb3-ff4c.ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '810e-2a02-ab88-c93-2300-c9c2-ec0a-2674-e4a8.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://810e-2a02-ab88-c93-2300-c9c2-ec0a-2674-e4a8.ngrok-free.app']
 
 # Application definition
 
 WSGI_APPLICATION = 'project.wsgi.application'
-NGROK_URL = 'https://8142-2a02-ab88-c93-2300-1550-2d46-cbb3-ff4c.ngrok-free.app'
+NGROK_URL = 'https://810e-2a02-ab88-c93-2300-c9c2-ec0a-2674-e4a8.ngrok-free.app'
 INSTALLED_APPS = [
     'management',
     'django.contrib.admin',

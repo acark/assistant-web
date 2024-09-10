@@ -170,17 +170,22 @@ def delete_assistant(request, assistant_id):
     
 @csrf_exempt
 def root_view(request):
+    
+    ## initliza session manager
+    session_manager = SessionManager()
+    
     if request.method == 'POST':
         # Handle POST request
         data = json.loads(request.body)
-        if data['message']['type'] == 'conversation-update':
+            
+        if data['message']['type'] == 'function-call':
         #     print(data['message']['type'][])
         # print("****************************************************************************************")
         # print("****************************************************************************************")
             data_to_send = { "error": "Sorry, not enough credits on your account, please refill." }
 
             _ = send_to_ngrok(data_to_send)
-            
+            print(_)
         #if(data[0] == 'conversation-update'):
         #    print(data['content'])
         return JsonResponse({"message": "Received POST request at root"})
@@ -193,14 +198,9 @@ def send_to_ngrok(data):
         "Authorization": f"Bearer {project_settings.VAPI_API_TOKEN}"
     }
     try:
-        logger.info(f"Sending data to ngrok URL: {project_settings.NGROK_URL}")
-        logger.debug(f"Request data: {data}")
-        
         response = requests.post(project_settings.NGROK_URL, json=data, headers=headers)
-        print(response.__dict__)
-        logger.info(f"Response status code: {response.status_code}")
-        logger.debug(f"Response content: {response.text}")
-        
+        print(response.status_code)
+
         response.raise_for_status()
         return response.json()
     except requests.HTTPError as http_err:
