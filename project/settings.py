@@ -48,6 +48,7 @@ CSRF_TRUSTED_ORIGINS = ['https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app']
 WSGI_APPLICATION = 'project.wsgi.application'
 NGROK_URL = 'https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app'
 INSTALLED_APPS = [
+    'restaurants',
     'management',
     'django.contrib.admin',
     'django.contrib.auth',

@@ -22,5 +22,6 @@ from management import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.root_view, name='root'),
-    path("", include('management.urls'))]
+    path('', views.root_view, name='root'), ## Localhost purpose only. It needs to be changed to something else when we deploy
+    path("", include('management.urls'))],
+    path('restaurants',include('restaurants.urls'))

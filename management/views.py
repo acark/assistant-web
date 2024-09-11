@@ -169,6 +169,9 @@ def delete_assistant(request, assistant_id):
     
 from openai_api.openai_client import InformationExtractor
 from typing import List, Dict, Any
+from datetime import datetime
+from restaurants.models import Restaurant
+from .restaurant_manager import restaurant_manager
 
 ## CALL HANDLER
 class CallHandler:
@@ -190,29 +193,27 @@ class CallHandler:
     def get_user_content(self) -> str:
         return self.user_content
 
+class CallSession:
+    def __init__(self, call_id: str):
+        self.call_id = call_id
+        self.data: Dict[str, Any] = {}
+        self.handler: CallHandler = None
+        self.processed_data: Dict[str, Any] = {}
+        self.internal_results: List[Dict[str, Any]] = []
 
+    def update_data(self, new_data: Dict[str, Any]):
+        self.data.update(new_data)
 
-@csrf_exempt
-def root_view(request):
-    
-    ## initliza session manager
-    #session_manager = SessionManager()
-    if request.method == 'POST':
-        # Handle POST request
-        data = json.loads(request.body, strict=False)
-        file_name = "output.json"
-        # Write the data to a JSON file
-        with open(file_name, "w") as json_file:
-            json.dump(data, json_file, indent=4)
-        # Accessing different parts of the dat
-        if data['message']['type'] == 'tool-calls':
-            data = json.loads(request.body)
-            handler = CallHandler(json.dumps(data))
-            call_id = handler.get_call_id()
-            user_content = handler.get_user_content()
+    def set_handler(self, json_data: str):
+        self.handler = CallHandler(json_data)
 
+    def process_data(self):
+        if self.handler:
+            user_content = self.handler.get_user_content()
+            
             extractor = InformationExtractor(
-                system_prompt="You are an AI assistant that extracts and interprets date and time information from user input. Please convert relative time expressions to absolute dates and times based on the current date and time provided.",
+                system_prompt="""You are an AI assistant that extracts and interprets date and time information from user input.
+                Please convert relative time expressions to absolute dates and times based on the current date and time provided.""",
                 assistant_prompt={
                     "task": "Extract booking date and time",
                     "format": {
@@ -223,38 +224,159 @@ def root_view(request):
             )
 
             extracted_info = extractor.extract(user_content)
-
             
-            _ = send_to_ngrok(data_to_send)
-            #print(_)
-        #if(data[0] == 'conversation-update'):
-        #    print(data['content'])
-        return JsonResponse({"message": "Received POST request at root"})
+            self.processed_data = {
+                "call_id": self.call_id,
+                "extracted_info": extracted_info
+            }
+
+    def validate_booking_datetime(self, booking_datetime: str) -> Dict[str, Any]:
+        restaurant_id = self.data.get('restaurant_id')
+        if not restaurant_id:
+            return {"is_valid": False, "reason": "Restaurant ID not provided"}
+        
+        return restaurant_manager.validate_booking_datetime(restaurant_id, booking_datetime)
+
+    def check_restaurant_availability(self, booking_datetime: str) -> Dict[str, Any]:
+        restaurant_id = self.data.get('restaurant_id')
+        if not restaurant_id:
+            return {"is_available": False, "reason": "Restaurant ID not provided"}
+        
+        party_size = self.data.get('party_size', 2)  # Default to 2 if not specified
+        duration = self.data.get('duration', 120)  # Default to 120 minutes if not specified
+        
+        availability = restaurant_manager.check_restaurant_availability(restaurant_id, booking_datetime, party_size, duration)
+        
+        if not availability['is_available']:
+            alternative_times = restaurant_manager.suggest_alternative_times(restaurant_id, booking_datetime, party_size, duration)
+            availability['alternative_times'] = alternative_times
+
+        return availability
+
+    def perform_internal_processes(self):
+        # Process 1: Validate booking date and time
+        booking_datetime = self.processed_data.get('extracted_info', {}).get('booking_datetime')
+        if booking_datetime:
+            validation_result = self.validate_booking_datetime(booking_datetime)
+            self.internal_results.append({
+                "process": "booking_validation",
+                "result": validation_result
+            })
+
+            # Process 2: Check restaurant availability
+            if validation_result.get('is_valid', False):
+                availability_result = self.check_restaurant_availability(booking_datetime)
+                self.internal_results.append({
+                    "process": "availability_check",
+                    "result": availability_result
+                })
+
+    def prepare_ngrok_data(self):
+        result_string = f"Extracted booking information: {json.dumps(self.processed_data['extracted_info'])}\n"
+        result_string += f"Internal processing results: {json.dumps(self.internal_results)}"
+
+        # If alternative times were suggested, add them to the result string
+        availability_check = next((result for result in self.internal_results if result['process'] == 'availability_check'), None)
+        if availability_check and 'alternative_times' in availability_check['result']:
+            alternative_times = availability_check['result']['alternative_times']
+            if alternative_times['success']:
+                result_string += f"\nAlternative booking times: {', '.join(alternative_times['alternative_times'])}"
+            else:
+                result_string += f"\nNo alternative times available: {alternative_times['reason']}"
+
+        return {
+            "results": [
+                {
+                    "toolCallId": self.call_id,
+                    "result": result_string
+                }
+            ]
+        }
+
+    def send_to_ngrok(self): # Send data to GATEWAY!
+        ngrok_data = self.prepare_ngrok_data()
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {project_settings.VAPI_API_TOKEN}"
+        }
+        try:
+            response = requests.post(project_settings.NGROK_URL, json=ngrok_data, headers=headers)
+            response.raise_for_status()
+            logger.info(f"Data sent to ngrok successfully for call_id: {self.call_id}")
+            return response.json()
+        except requests.HTTPError as http_err:
+            logger.error(f"HTTP error occurred while sending data to ngrok for call_id {self.call_id}: {http_err}")
+            logger.error(f"Response content: {http_err.response.text}")
+            raise
+        except requests.RequestException as req_err:
+            logger.error(f"Request exception occurred while sending data to ngrok for call_id {self.call_id}: {req_err}")
+            raise
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while sending data to ngrok for call_id {self.call_id}: {e}")
+            raise
+
+class SessionManager:
+    def __init__(self):
+        self.sessions: Dict[str, CallSession] = {}
+
+    def get_or_create_session(self, call_id: str) -> CallSession:
+        if call_id not in self.sessions:
+            self.sessions[call_id] = CallSession(call_id)
+        return self.sessions[call_id]
+
+    def update_session(self, call_id: str, json_data: str):
+        session = self.get_or_create_session(call_id)
+        session.set_handler(json_data) #where we set the handler for the call
+        session.process_data()  #where we extract the booking datetime and restaurant availability from OPENAI
+        session.perform_internal_processes() # Where we check the booking datetime and restaurant availability
+        return session.send_to_ngrok()
+
+    def get_session_data(self, call_id: str) -> Dict[str, Any]:
+        return self.sessions.get(call_id, CallSession(call_id)).data
+
+# Initialize the SessionManager
+session_manager = SessionManager()
+
+@csrf_exempt
+def root_view(request):
+    if request.method == 'POST':
+        json_data = request.body.decode('utf-8')
+        data = json.loads(json_data)
+        
+        # Extract the call_id from the incoming data
+        call_id = data['message']['toolCalls'][0]['id']
+        
+        # Create or get the session
+        session = session_manager.get_or_create_session(call_id)
+        
+        # Set the restaurant_id in the session data
+        # You'll need to determine how to get the restaurant_id from the incoming data
+        # This is just an example, adjust according to your actual data structure
+        restaurant_id = data.get('restaurant_id') # TODO: This restaurant_id is not in the data! And it shoul be handled in when client signed in and create the assistant!
+        if restaurant_id:
+            session.data['restaurant_id'] = restaurant_id
+        
+        try:
+            # Update the session with the new data, process it, and send to ngrok
+            ngrok_response = session_manager.update_session(call_id, json_data)
+            
+            return JsonResponse({
+                "message": "Received POST request at root, processed data, and sent to ngrok",
+                "call_id": call_id,
+                "ngrok_response": ngrok_response
+            })
+        except Exception as e:
+            logger.error(f"Error processing request for call_id {call_id}: {str(e)}")
+            return JsonResponse({
+                "error": "An error occurred while processing the request",
+                "call_id": call_id
+            }, status=500)
+    
     return JsonResponse({"message": "Hello from Django root!"})
-import requests
 
-def send_to_ngrok(data):
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {project_settings.VAPI_API_TOKEN}"
-    }
-    try:
-        response = requests.post(project_settings.NGROK_URL, json=data, headers=headers)
-        print(response.status_code)
 
-        response.raise_for_status()
-        return response.json()
-    except requests.HTTPError as http_err:
-        logger.error(f"HTTP error occurred: {http_err}")
-        logger.error(f"Response content: {http_err.response.text}")
-        raise
-    except requests.RequestException as req_err:
-        logger.error(f"Request exception occurred: {req_err}")
-        raise
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
-        raise
-##CAL HANDLER
+
+
 @csrf_exempt
 @require_http_methods(["GET"])
 def call_listen(request):
