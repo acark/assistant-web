@@ -167,25 +167,66 @@ def delete_assistant(request, assistant_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=404)
     
-    
+from openai_api.openai_client import InformationExtractor
+from typing import List, Dict, Any
+
+## CALL HANDLER
+class CallHandler:
+    def __init__(self, json_data: str):
+        self.data = json.loads(json_data)
+        self.call_id = self._extract_call_id()
+        self.user_content = self._extract_user_content()
+
+    def _extract_call_id(self) -> str:
+        return self.data['message']['toolCalls'][0]['id']
+
+    def _extract_user_content(self) -> str:
+        messages = self.data['message']['artifact']['messagesOpenAIFormatted']
+        return next((m['content'] for m in messages if m['role'] == 'user'), "")
+
+    def get_call_id(self) -> str:
+        return self.call_id
+
+    def get_user_content(self) -> str:
+        return self.user_content
+
+
+
 @csrf_exempt
 def root_view(request):
     
     ## initliza session manager
-    session_manager = SessionManager()
-    
+    #session_manager = SessionManager()
     if request.method == 'POST':
         # Handle POST request
-        data = json.loads(request.body)
-            
-        if data['message']['type'] == 'function-call':
-        #     print(data['message']['type'][])
-        # print("****************************************************************************************")
-        # print("****************************************************************************************")
-            data_to_send = { "error": "Sorry, not enough credits on your account, please refill." }
+        data = json.loads(request.body, strict=False)
+        file_name = "output.json"
+        # Write the data to a JSON file
+        with open(file_name, "w") as json_file:
+            json.dump(data, json_file, indent=4)
+        # Accessing different parts of the dat
+        if data['message']['type'] == 'tool-calls':
+            data = json.loads(request.body)
+            handler = CallHandler(json.dumps(data))
+            call_id = handler.get_call_id()
+            user_content = handler.get_user_content()
 
+            extractor = InformationExtractor(
+                system_prompt="You are an AI assistant that extracts and interprets date and time information from user input. Please convert relative time expressions to absolute dates and times based on the current date and time provided.",
+                assistant_prompt={
+                    "task": "Extract booking date and time",
+                    "format": {
+                        "booking_datetime": "YYYY-MM-DD HH:MM:SS"
+                    }
+                },
+                model="gpt-3.5-turbo"
+            )
+
+            extracted_info = extractor.extract(user_content)
+
+            
             _ = send_to_ngrok(data_to_send)
-            print(_)
+            #print(_)
         #if(data[0] == 'conversation-update'):
         #    print(data['content'])
         return JsonResponse({"message": "Received POST request at root"})
@@ -220,3 +261,42 @@ def call_listen(request):
     response = requests.get(project_settings.NGROK_URL)
     return JsonResponse({"body": response.body})
 
+### PROXY HANDLER TODO sil bunu?
+from django.views import View
+class ProxyView(View):
+    def dispatch(self, request, *args, **kwargs):
+        # Determine the target URL
+        path = request.get_full_path()
+        if request.headers.get('X-Should-Route-To'):
+            url = request.headers['X-Should-Route-To'] + path
+        else:
+            url = f'http://localhost:8081{path}'
+
+        # Forward the request
+        method = request.method.lower()
+        request_kwargs = {
+            'method': method,
+            'url': url,
+            'headers': {key: value for (key, value) in request.headers.items() if key.lower() != 'host'},
+            'data': request.body,
+            'cookies': request.COOKIES,
+            'allow_redirects': False,
+        }
+
+        if method == 'get':
+            request_kwargs['params'] = request.GET
+
+        response = requests.request(**request_kwargs)
+
+        # Prepare and send the response
+        django_response = HttpResponse(
+            content=response.content,
+            status=response.status_code,
+        )
+
+        excluded_headers = ['content-encoding', 'transfer-encoding', 'connection']
+        for header, value in response.headers.items():
+            if header.lower() not in excluded_headers:
+                django_response[header] = value
+
+        return django_response

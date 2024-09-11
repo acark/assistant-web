@@ -34,19 +34,19 @@ API_TOKEN = os.getenv('API_TOKEN')
 
 # ... other settings ...
 VAPI_API_TOKEN = os.getenv('VAPI_API_TOKEN')
-
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 VAPI_API_URL = 'https://api.vapi.ai/'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '810e-2a02-ab88-c93-2300-c9c2-ec0a-2674-e4a8.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ['https://810e-2a02-ab88-c93-2300-c9c2-ec0a-2674-e4a8.ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','.ngrok.io','.ngrok-free.app','dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app']
 
 # Application definition
 
 WSGI_APPLICATION = 'project.wsgi.application'
-NGROK_URL = 'https://810e-2a02-ab88-c93-2300-c9c2-ec0a-2674-e4a8.ngrok-free.app'
+NGROK_URL = 'https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app'
 INSTALLED_APPS = [
     'management',
     'django.contrib.admin',
@@ -146,3 +146,6 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+

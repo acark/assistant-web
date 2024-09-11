@@ -1,0 +1,367 @@
+{
+    "message": {
+        "timestamp": "2024-09-10T23:13:54.908Z",
+        "type": "tool-calls",
+        "toolCalls": [
+            {
+                "id": "call_9djeKPGivbyTH841H25Fp6oh",
+                "type": "function",
+                "function": {
+                    "name": "getName",
+                    "arguments": {}
+                }
+            }
+        ],
+        "toolCallList": [
+            {
+                "id": "call_9djeKPGivbyTH841H25Fp6oh",
+                "type": "function",
+                "function": {
+                    "name": "getName",
+                    "arguments": {}
+                }
+            }
+        ],
+        "toolWithToolCallList": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "getName",
+                    "async": false,
+                    "description": "This function takes the USER name. When the conversation start with the USER and BOT. BOT asks the name of the costumer in Turkish. When bot understand the name of the USER then this function return the name."
+                },
+                "async": false,
+                "server": {
+                    "url": "https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app"
+                },
+                "messages": [],
+                "toolCall": {
+                    "id": "call_9djeKPGivbyTH841H25Fp6oh",
+                    "type": "function",
+                    "function": {
+                        "name": "getName",
+                        "arguments": {}
+                    }
+                }
+            }
+        ],
+        "artifact": {
+            "messages": [
+                {
+                    "role": "system",
+                    "message": "Sistem:\n\nAssistant Profil: Sen, restoranda gelen telefon \u00e7a\u011fr\u0131lar\u0131n\u0131 yan\u0131tlayan bir sekretersin. Gelen aramalar\u0131 a\u00e7\u0131yorsun ve kullan\u0131c\u0131n\u0131n rezervasyonlar\u0131n\u0131 al\u0131yorsun. Rezervasyonlar\u0131 al\u0131rken sorman gereken baz\u0131 \u00e7ok \u00f6nemli sorular var. Bu sorular s\u0131ras\u0131yla:\n\nKullan\u0131c\u0131n\u0131n ad\u0131n\u0131 ve soyad\u0131n\u0131 \u00f6\u011fren.\nKullan\u0131c\u0131n\u0131n hangi tarih ve saati rezervasyon yapmak istedi\u011fini sor.\nKullan\u0131c\u0131n\u0131n o g\u00fcn kat\u0131laca\u011f\u0131 misafir say\u0131s\u0131n\u0131 \u00f6\u011fren.\nBu 3 \u00f6nemli soruyu s\u0131rayla sormal\u0131 ve her cevab\u0131 ald\u0131ktan sonra bilgileri tekrar edip do\u011frulama yapmal\u0131s\u0131n.\n\nRezervasyon Detaylar\u0131 Al\u0131n\u0131rken:\nE\u011fer ad ve soyad bilgisi al\u0131namazsa, kullan\u0131c\u0131n\u0131n ad\u0131n\u0131 ve soyad\u0131n\u0131 net bir \u015fekilde tekrar \u00f6\u011fren.\nE\u011fer tarih ve saat bilgisi al\u0131namazsa, kibarca tarih ve saat bilgisini tekrar rica et.\nE\u011fer misafir say\u0131s\u0131 bilgisi al\u0131namazsa, ka\u00e7 ki\u015filik masa istendi\u011fini yeniden sor.\n\u00d6nemli:\nKullan\u0131c\u0131n\u0131n verdi\u011fi tarih ve saat i\u00e7in restoranda m\u00fcsaitlik kontrol\u00fc yap\u0131lacak. M\u00fcsaitlik var ise, rezervasyona devam et. E\u011fer istenen tarihte m\u00fcsaitlik yoksa, ku...",
+                    "time": 1726009976154,
+                    "secondsFromStart": 0
+                },
+                {
+                    "role": "bot",
+                    "message": "Merhaba. Size nas\u0131l yard\u0131mc\u0131 olabilirim?",
+                    "time": 1726009977334,
+                    "endTime": 1726009979894,
+                    "secondsFromStart": 1.04,
+                    "duration": 2120,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Merhaba, ben rezervasyon yapt\u0131m.",
+                    "time": 1726009980754,
+                    "endTime": 1726009981974,
+                    "secondsFromStart": 4.46,
+                    "duration": 1220
+                },
+                {
+                    "role": "bot",
+                    "message": "Elbette size yard\u0131mc\u0131 olabilmem i\u00e7in ad\u0131n\u0131z\u0131 ve soyad\u0131n\u0131z\u0131 \u00f6\u011frenebilir miyim?",
+                    "time": 1726009985234.001,
+                    "endTime": 1726009990504,
+                    "secondsFromStart": 8.940001,
+                    "duration": 4789.9990234375,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Tabii ismim Kaan, Su ismim Kara K\u00f6se.",
+                    "time": 1726009991004,
+                    "endTime": 1726009993654,
+                    "secondsFromStart": 14.71,
+                    "duration": 2650
+                },
+                {
+                    "role": "bot",
+                    "message": "Verdi\u011finiz bilgilerle ad\u0131n\u0131z Kaan, soyad\u0131n\u0131z. Karak\u00f6se do\u011fru mudur?",
+                    "time": 1726009995244,
+                    "endTime": 1726009999814,
+                    "secondsFromStart": 18.95,
+                    "duration": 4170,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Do\u011frudur.",
+                    "time": 1726010000284,
+                    "endTime": 1726010000784,
+                    "secondsFromStart": 23.99,
+                    "duration": 500
+                },
+                {
+                    "role": "bot",
+                    "message": "Rezervasyon yapmak istedi\u011finiz tarih ve saati \u00f6\u011frenebilir miyim?",
+                    "time": 1726010003553.998,
+                    "endTime": 1726010007484,
+                    "secondsFromStart": 27.259998,
+                    "duration": 3930.001953125,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Manyings kanal.",
+                    "time": 1726010008344,
+                    "endTime": 1726010009404,
+                    "secondsFromStart": 32.05,
+                    "duration": 1060
+                },
+                {
+                    "role": "bot",
+                    "message": "Anlayamad\u0131m. Rezervasyon yapmak istedi\u011finiz tarihi ve saati tekrar belirtir misiniz?",
+                    "time": 1726010011154,
+                    "endTime": 1726010016064,
+                    "secondsFromStart": 34.86,
+                    "duration": 4050,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Haftaya per\u015fembe.",
+                    "time": 1726010018084,
+                    "endTime": 1726010019064,
+                    "secondsFromStart": 41.79,
+                    "duration": 980
+                },
+                {
+                    "role": "bot",
+                    "message": "Te\u015fekk\u00fcr ederim. Haftaya per\u015fembe hangi saatte rezervasyon yapmak istersiniz?",
+                    "time": 1726010021444,
+                    "endTime": 1726010026103.998,
+                    "secondsFromStart": 45.15,
+                    "duration": 3879.998046875,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Bak, ama benim ismim kalan.",
+                    "time": 1726010026274,
+                    "endTime": 1726010028294,
+                    "secondsFromStart": 49.98,
+                    "duration": 2020
+                },
+                {
+                    "role": "bot",
+                    "message": "Ad\u0131n\u0131z Kaan, soyad\u0131n\u0131z Karak\u00f6se do\u011fru mudur? Ayr\u0131ca haftaya",
+                    "time": 1726010030104,
+                    "endTime": 1726010034524,
+                    "secondsFromStart": 53.81,
+                    "duration": 4420,
+                    "source": ""
+                },
+                {
+                    "role": "user",
+                    "message": "Do\u011frudur.",
+                    "time": 1726010033644,
+                    "endTime": 1726010034144,
+                    "secondsFromStart": 57.35,
+                    "duration": 500
+                },
+                {
+                    "toolCalls": [
+                        {
+                            "id": "call_9djeKPGivbyTH841H25Fp6oh",
+                            "type": "function",
+                            "function": {
+                                "name": "getName",
+                                "arguments": "{}"
+                            }
+                        }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1726010034905,
+                    "secondsFromStart": 58.728
+                }
+            ],
+            "messagesOpenAIFormatted": [
+                {
+                    "role": "system",
+                    "content": "Sistem:\n\nAssistant Profil: Sen, restoranda gelen telefon \u00e7a\u011fr\u0131lar\u0131n\u0131 yan\u0131tlayan bir sekretersin. Gelen aramalar\u0131 a\u00e7\u0131yorsun ve kullan\u0131c\u0131n\u0131n rezervasyonlar\u0131n\u0131 al\u0131yorsun. Rezervasyonlar\u0131 al\u0131rken sorman gereken baz\u0131 \u00e7ok \u00f6nemli sorular var. Bu sorular s\u0131ras\u0131yla:\n\nKullan\u0131c\u0131n\u0131n ad\u0131n\u0131 ve soyad\u0131n\u0131 \u00f6\u011fren.\nKullan\u0131c\u0131n\u0131n hangi tarih ve saati rezervasyon yapmak istedi\u011fini sor.\nKullan\u0131c\u0131n\u0131n o g\u00fcn kat\u0131laca\u011f\u0131 misafir say\u0131s\u0131n\u0131 \u00f6\u011fren.\nBu 3 \u00f6nemli soruyu s\u0131rayla sormal\u0131 ve her cevab\u0131 ald\u0131ktan sonra bilgileri tekrar edip do\u011frulama yapmal\u0131s\u0131n.\n\nRezervasyon Detaylar\u0131 Al\u0131n\u0131rken:\nE\u011fer ad ve soyad bilgisi al\u0131namazsa, kullan\u0131c\u0131n\u0131n ad\u0131n\u0131 ve soyad\u0131n\u0131 net bir \u015fekilde tekrar \u00f6\u011fren.\nE\u011fer tarih ve saat bilgisi al\u0131namazsa, kibarca tarih ve saat bilgisini tekrar rica et.\nE\u011fer misafir say\u0131s\u0131 bilgisi al\u0131namazsa, ka\u00e7 ki\u015filik masa istendi\u011fini yeniden sor.\n\u00d6nemli:\nKullan\u0131c\u0131n\u0131n verdi\u011fi tarih ve saat i\u00e7in restoranda m\u00fcsaitlik kontrol\u00fc yap\u0131lacak. M\u00fcsaitlik var ise, rezervasyona devam et. E\u011fer istenen tarihte m\u00fcsaitlik yoksa, ku..."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Merhaba. Size nas\u0131l yard\u0131mc\u0131 olabilirim?"
+                },
+                {
+                    "role": "user",
+                    "content": "Merhaba, ben rezervasyon yapt\u0131m."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Elbette size yard\u0131mc\u0131 olabilmem i\u00e7in ad\u0131n\u0131z\u0131 ve soyad\u0131n\u0131z\u0131 \u00f6\u011frenebilir miyim?"
+                },
+                {
+                    "role": "user",
+                    "content": "Tabii ismim Kaan, Su ismim Kara K\u00f6se."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Verdi\u011finiz bilgilerle ad\u0131n\u0131z Kaan, soyad\u0131n\u0131z. Karak\u00f6se do\u011fru mudur?"
+                },
+                {
+                    "role": "user",
+                    "content": "Do\u011frudur."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Rezervasyon yapmak istedi\u011finiz tarih ve saati \u00f6\u011frenebilir miyim?"
+                },
+                {
+                    "role": "user",
+                    "content": "Manyings kanal."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Anlayamad\u0131m. Rezervasyon yapmak istedi\u011finiz tarihi ve saati tekrar belirtir misiniz?"
+                },
+                {
+                    "role": "user",
+                    "content": "Haftaya per\u015fembe."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Te\u015fekk\u00fcr ederim. Haftaya per\u015fembe hangi saatte rezervasyon yapmak istersiniz?"
+                },
+                {
+                    "role": "user",
+                    "content": "Bak, ama benim ismim kalan."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Ad\u0131n\u0131z Kaan, soyad\u0131n\u0131z Karak\u00f6se do\u011fru mudur? Ayr\u0131ca haftaya"
+                },
+                {
+                    "role": "user",
+                    "content": "Do\u011frudur."
+                },
+                {
+                    "role": "assistant",
+                    "tool_calls": [
+                        {
+                            "id": "call_9djeKPGivbyTH841H25Fp6oh",
+                            "type": "function",
+                            "function": {
+                                "name": "getName",
+                                "arguments": "{}"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "role": "tool",
+                    "tool_call_id": "call_9djeKPGivbyTH841H25Fp6oh",
+                    "content": "Tool Result Still Pending But Proceed Further If Possible."
+                }
+            ]
+        },
+        "call": {
+            "id": "7f81a350-4870-4cc6-8906-50eda64c09ee",
+            "orgId": "6709f4ab-b1f0-4043-9ed1-69e76b9f1a3f",
+            "createdAt": "2024-09-10T23:12:51.821Z",
+            "updatedAt": "2024-09-10T23:12:51.821Z",
+            "type": "webCall",
+            "monitor": {
+                "listenUrl": "wss://aws-us-west-2-production1-phone-call-websocket.vapi.ai/7f81a350-4870-4cc6-8906-50eda64c09ee/transport",
+                "controlUrl": "https://aws-us-west-2-production1-phone-call-websocket.vapi.ai/7f81a350-4870-4cc6-8906-50eda64c09ee/control"
+            },
+            "webCallUrl": "https://vapi.daily.co/Xw2mQgFHvKdxhqjb9YMe",
+            "status": "queued",
+            "assistantId": "2d4bcbea-be26-4856-a61e-40a168999bff"
+        },
+        "assistant": {
+            "id": "2d4bcbea-be26-4856-a61e-40a168999bff",
+            "orgId": "6709f4ab-b1f0-4043-9ed1-69e76b9f1a3f",
+            "name": "Test Assistant",
+            "voice": {
+                "voiceId": "onyx",
+                "provider": "openai"
+            },
+            "createdAt": "2024-09-03T18:57:37.523Z",
+            "updatedAt": "2024-09-10T23:10:22.006Z",
+            "model": {
+                "model": "gpt-4o",
+                "toolIds": [
+                    "216f359a-e304-48f5-8273-eddeee5f95d6"
+                ],
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Sistem:\n\nAssistant Profil: Sen, restoranda gelen telefon \u00e7a\u011fr\u0131lar\u0131n\u0131 yan\u0131tlayan bir sekretersin. Gelen aramalar\u0131 a\u00e7\u0131yorsun ve kullan\u0131c\u0131n\u0131n rezervasyonlar\u0131n\u0131 al\u0131yorsun. Rezervasyonlar\u0131 al\u0131rken sorman gereken baz\u0131 \u00e7ok \u00f6nemli sorular var. Bu sorular s\u0131ras\u0131yla:\n\nKullan\u0131c\u0131n\u0131n ad\u0131n\u0131 ve soyad\u0131n\u0131 \u00f6\u011fren.\nKullan\u0131c\u0131n\u0131n hangi tarih ve saati rezervasyon yapmak istedi\u011fini sor.\nKullan\u0131c\u0131n\u0131n o g\u00fcn kat\u0131laca\u011f\u0131 misafir say\u0131s\u0131n\u0131 \u00f6\u011fren.\nBu 3 \u00f6nemli soruyu s\u0131rayla sormal\u0131 ve her cevab\u0131 ald\u0131ktan sonra bilgileri tekrar edip do\u011frulama yapmal\u0131s\u0131n.\n\nRezervasyon Detaylar\u0131 Al\u0131n\u0131rken:\nE\u011fer ad ve soyad bilgisi al\u0131namazsa, kullan\u0131c\u0131n\u0131n ad\u0131n\u0131 ve soyad\u0131n\u0131 net bir \u015fekilde tekrar \u00f6\u011fren.\nE\u011fer tarih ve saat bilgisi al\u0131namazsa, kibarca tarih ve saat bilgisini tekrar rica et.\nE\u011fer misafir say\u0131s\u0131 bilgisi al\u0131namazsa, ka\u00e7 ki\u015filik masa istendi\u011fini yeniden sor.\n\u00d6nemli:\nKullan\u0131c\u0131n\u0131n verdi\u011fi tarih ve saat i\u00e7in restoranda m\u00fcsaitlik kontrol\u00fc yap\u0131lacak. M\u00fcsaitlik var ise, rezervasyona devam et. E\u011fer istenen tarihte m\u00fcsaitlik yoksa, kullan\u0131c\u0131ya en yak\u0131n m\u00fcsait tarih ve saat \u00f6ner.\n\u0130\u00e7 s\u00fcre\u00e7ler veya kontroller hakk\u0131nda bilgi verme. Kullan\u0131c\u0131ya yaln\u0131zca gerekli bilgileri ilet ve t\u00fcm s\u00fcre\u00e7leri kullan\u0131c\u0131 i\u00e7in anla\u015f\u0131l\u0131r ve \u015feffaf tut."
+                    }
+                ],
+                "provider": "openai",
+                "maxTokens": 1000,
+                "temperature": 0.7,
+                "numFastTurns": 0,
+                "emotionRecognitionEnabled": true,
+                "tools": [
+                    {
+                        "id": "216f359a-e304-48f5-8273-eddeee5f95d6",
+                        "createdAt": "2024-09-10T22:50:42.176Z",
+                        "updatedAt": "2024-09-10T23:12:48.113Z",
+                        "type": "function",
+                        "function": {
+                            "name": "getName",
+                            "async": false,
+                            "description": "This function takes the USER name. When the conversation start with the USER and BOT. BOT asks the name of the costumer in Turkish. When bot understand the name of the USER then this function return the name."
+                        },
+                        "orgId": "6709f4ab-b1f0-4043-9ed1-69e76b9f1a3f",
+                        "server": {
+                            "url": "https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app"
+                        },
+                        "async": false
+                    }
+                ]
+            },
+            "recordingEnabled": true,
+            "firstMessage": "Merhaba, size nas\u0131l yard\u0131mc\u0131 olabilirim?",
+            "transcriber": {
+                "model": "nova-2-general",
+                "language": "tr",
+                "provider": "deepgram"
+            },
+            "silenceTimeoutSeconds": 30,
+            "clientMessages": [
+                "tool-calls",
+                "tool-calls-result",
+                "function-call"
+            ],
+            "serverMessages": [
+                "function-call",
+                "tool-calls"
+            ],
+            "serverUrl": "https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app",
+            "endCallPhrases": [
+                "Goodbye",
+                "Thank you for calling"
+            ],
+            "hipaaEnabled": false,
+            "maxDurationSeconds": 600,
+            "backgroundSound": "office",
+            "backchannelingEnabled": false,
+            "firstMessageMode": "assistant-speaks-first",
+            "voicemailDetection": {
+                "enabled": true,
+                "provider": "twilio"
+            },
+            "backgroundDenoisingEnabled": false,
+            "modelOutputInMessagesEnabled": false
+        }
+    }
+}
