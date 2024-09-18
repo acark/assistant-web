@@ -315,30 +315,46 @@ class CallSession:
             logger.error(f"An unexpected error occurred while sending data to ngrok for call_id {self.call_id}: {e}")
             raise
 
+import threading
+from collections import defaultdict
+
 class SessionManager:
     def __init__(self):
-        self.sessions: Dict[str, CallSession] = {}
+        self.sessions = defaultdict(lambda: {'lock': threading.Lock(), 'session': None})
+        self.global_lock = threading.Lock()
 
     def get_or_create_session(self, call_id: str) -> CallSession:
-        if call_id not in self.sessions:
-            self.sessions[call_id] = CallSession(call_id)
-        return self.sessions[call_id]
+        with self.global_lock:
+            session_data = self.sessions[call_id]
+        
+        with session_data['lock']:
+            if session_data['session'] is None:
+                session_data['session'] = CallSession(call_id)
+            return session_data['session']
 
     def update_session(self, call_id: str, json_data: str):
-        session = self.get_or_create_session(call_id)
-        session.set_handler(json_data) #where we set the handler for the call
-        session.process_data()  #where we extract the booking datetime and restaurant availability from OPENAI
-        session.perform_internal_processes() # Where we check the booking datetime and restaurant availability
-        return session.send_to_ngrok()
+        session_data = self.sessions[call_id]
+        with session_data['lock']:
+            session = session_data['session']
+            if session is None:
+                session = CallSession(call_id)
+                session_data['session'] = session
+            
+            session.set_handler(json_data)
+            session.process_data()
+            session.perform_internal_processes()
+            return session.send_to_ngrok()
 
     def get_session_data(self, call_id: str) -> Dict[str, Any]:
-        return self.sessions.get(call_id, CallSession(call_id)).data
+        session_data = self.sessions[call_id]
+        with session_data['lock']:
+            return session_data['session'].data if session_data['session'] else {}
 
 # Initialize the SessionManager
 session_manager = SessionManager()
 
 @csrf_exempt
-def root_view(request):
+def process_gateway_request(request):
     if request.method == 'POST':
         json_data = request.body.decode('utf-8')
         data = json.loads(json_data)
