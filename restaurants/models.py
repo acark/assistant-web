@@ -3,24 +3,48 @@ from django.contrib.auth.models import User
 from management.models import AssistantModel
 from django.core.exceptions import ValidationError
 import json
-
+from zoneinfo import available_timezones
+from zoneinfo import ZoneInfo
 
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20)
     address = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class Restaurant(models.Model): # this is the restaurant model for the restaurant owner that is singed up.
+    def __str__(self):
+        return f"{self.user.username} - {self.phone_number}"
+    
+class Restaurant(models.Model):
     owner = models.ForeignKey(Customer, related_name='restaurants', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    timezone = models.CharField(max_length=50)
-    assistant = models.ForeignKey(AssistantModel, related_name='restaurants', on_delete=models.CASCADE, null=True)   # when the restaurant is created, we will assign "default" assistant to the restaurant and they can adjust according to their needs
-    opening_hours = models.ForeignKey('OpeningHours', related_name='restaurants', on_delete=models.CASCADE, null=True) # this is tricky, we need to make sure that the opening hours is always correct according to the assistant's timezone and also the json field filling by the restaurant owner.
+    
+    # Create a list of common timezone choices
+    TIMEZONE_CHOICES = [
+        ('Europe/Budapest', 'Budapest (Hungary)'),
+        ('Europe/London', 'London'),
+        ('Europe/Paris', 'Paris'),
+    ] # add more it is needed
+    
+    timezone = models.CharField(
+        max_length=50,
+        choices=TIMEZONE_CHOICES,
+        default='Europe/Budapest'
+    )
+    assistant = models.ForeignKey(AssistantModel, related_name='restaurants', on_delete=models.CASCADE, null=True)
+    opening_hours = models.OneToOneField('OpeningHours', related_name='restaurant_hours', on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    
+    def __str__(self):
+        return self.name
+
+    def get_timezone(self):
+        return ZoneInfo(self.timezone)
+    
+    
 class Table(models.Model):
     restaurant = models.ForeignKey(Restaurant, related_name='tables', on_delete=models.CASCADE)
     table_id = models.CharField(max_length=20)
@@ -37,7 +61,7 @@ class OpeningHours(models.Model):
         ('sunday', 'Sunday'),
     ]
 
-    restaurant = models.ForeignKey('Restaurant', related_name='opening_hours', on_delete=models.CASCADE)
+    restaurant = models.OneToOneField('Restaurant', related_name='hours', on_delete=models.CASCADE)
     hours = models.JSONField(default=dict)
 
     class Meta:
@@ -68,6 +92,7 @@ class OpeningHours(models.Model):
         current_hours[day] = slots
         self.hours = current_hours
         self.save()
+        print('Saved!')
 
     def get_hours(self, day):
         return self.hours.get(day, [])

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import ProxyView
+
 from django.urls import path, re_path
 
 urlpatterns = [
@@ -20,7 +20,7 @@ urlpatterns = [
     path('assistant/<str:assistant_id>', views.update_assistant, name='update_assistant'),
     path('assistant/<str:assistant_id>', views.delete_assistant, name='delete_assistant'),
     
-    path('call-listen', views.call_listen, name='call_listen'),
+    path('call-listen', views.call_listen, name='call_listen')
     
-    re_path(r'^(?P<path>.*)$', ProxyView.as_view(), name='proxy')
+    #re_path(r'^(?P<path>.*)$', ProxyView.as_view(), name='proxy')
 ]

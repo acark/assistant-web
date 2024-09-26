@@ -35,3 +35,5 @@ try:
     admin.site.register(AssistantModel, AssistantAdmin)
 except AlreadyRegistered:
     pass  # Model has already been registered
+
+

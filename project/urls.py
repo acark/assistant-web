@@ -23,5 +23,9 @@ from management import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.process_gateway_request, name='root'), ## Localhost purpose only. It needs to be changed to something else when we deploy
-    path("", include('management.urls'))],
-    path('restaurants',include('restaurants.urls'))
+    path("management/", include('management.urls')),
+    path('restaurants/',include('restaurants.urls'))]
+
+
+
+

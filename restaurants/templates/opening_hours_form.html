@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load restaurant_filters %}
+
+{% block title %}{% if form.instance.pk %}Edit Opening Hours{% else %}Add Opening Hours{% endif %}{% endblock %}
+
+{% block content %}
+    <h1>
+    {% if form.instance.pk %}
+    Edit Opening Hours
+        {% else %}
+    Add Opening Hours
+    {% endif %}
+    </h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="fieldWrapper">
+            {{ form.restaurant.errors }}
+            <label for="{{ form.restaurant.id_for_label }}"> Restaurant:</label>
+            {{ form.restaurant }}
+        </div>
+
+        <h2>Hours</h2>
+
+        {% for day in form.instance.DAYS_OF_WEEK %}
+            <fieldset>
+                <legend>{{ day.1 }}</legend>
+                <div class="time-slots" id="{{ day.0 }}-slots">
+                    {% if form.instance.hours %}
+                        {% for slot in form.instance.hours|get_item:day.0 %}
+                            <div class="time-slot">
+                                <input type="time" name="{{ day.0 }}_start" value="{{ slot.start }}">
+                                <input type="time" name="{{ day.0 }}_end" value="{{ slot.end }}">
+                                <button type="button" class="remove-slot">Remove</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="button" class="add-slot" data-day="{{ day.0 }}">Add Time Slot</button>
+                <button type="button" class="remove-day">Remove</button>
+            </fieldset>
+        {% endfor %}
+        <button type="submit" class="btn">Save</button>
+    </form>
+    <a href="{% url 'opening-hours-list' %}">Cancel</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.add-slot').forEach(button => {
+                button.addEventListener('click', function() {
+                    const day = this.dataset.day;
+                    const slotsContainer = document.getElementById(`${day}-slots`);
+                    const newSlot = document.createElement('div');
+                    newSlot.className = 'time-slot';
+                    newSlot.innerHTML = `
+                        <input type="time" name="${day}_start">
+                        <input type="time" name="${day}_end">
+                        <button type="button" class="remove-slot">Remove</button>
+                    `;
+                    slotsContainer.appendChild(newSlot);
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.className == 'remove-slot') {
+                    e.target.parentNode.remove();
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.className == 'remove-day') {
+                    e.target.parentNode.remove();
+                }
+            });
+
+
+            
+        });
+    </script>
+    
+{% endblock %}

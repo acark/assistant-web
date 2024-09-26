@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Restaurant Details{% endblock %}
+
+
+
+
+
+{% block content %}
+    <h1>Restaurant Details</h1>
+    <p><strong>Owner Name:</strong> {{ restaurant.owner }}</p>
+    <p><strong>Name of Place:</strong> {{ restaurant.name }}</p>
+    <p><strong>timezone:</strong> {{ restaurant.timezone }}</p>
+
+    <p><strong>Assigned Assistant:</strong> 
+    {% if restaurant.assistant %}
+        <a href="{% url 'assistant_edit' slug=restaurant.assistant.slug %}">{{ restaurant.assistant }}</a>
+    {% else %}
+        Not assigned
+    {% endif %}</p>
+
+
+    <a href="{% url 'restaurant-update' restaurant.id %}" class="btn">Edit</a>
+    <a href="{% url 'restaurant-list' %}" class="btn">Back to List</a>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Restaurant List{% endblock %}
+
+{% block content %}
+    <h1>Restaurant List</h1>
+    <a href="{% url 'restaurant-create' %}" class="btn">Add New Restaurant</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Timezone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for restaurant in restaurants %}
+                <tr>
+                    <td>{{restaurant.restaurant_id}}</td>
+                    <td>{{ restaurant.name }}</td>
+                    <td>{{ restaurant.timezone }}</td>
+                    <td>
+                        <a href="{% url 'restaurant-detail' restaurant.id %}">View</a> |
+                        <a href="{% url 'restaurant-update' restaurant.id %}">Edit</a> |
+                        <a href="{% url 'restaurant-delete' restaurant.id %}">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No restaurants found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

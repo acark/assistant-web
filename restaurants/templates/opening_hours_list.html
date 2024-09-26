@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Opening Hours List{% endblock %}
+
+{% block content %}
+    <h1>Opening Hours List</h1>
+    <a href="{% url 'opening-hours-create' %}" class="btn">Add New Opening Hours</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Restaurant</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for oh in opening_hours %}
+                <tr>
+                    <td>{{ oh.restaurant.name }}</td>
+                    <td>
+                        <a href="{% url 'opening-hours-detail' oh.id %}">View</a> |
+                        <a href="{% url 'opening-hours-update' oh.id %}">Edit</a> |
+                        <a href="{% url 'opening-hours-delete' oh.id %}">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2">No opening hours found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

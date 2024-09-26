@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %} Opening Hours Detail{% endblock %}
+
+{% block content %}
+    <h1>Opening Hours for {{ opening_hours.restaurant.name }}</h1>
+    {% for day, slots in opening_hours.hours.items %}
+        <h2>{{ day|title }}</h2>
+        {% if slots %}
+            <ul>
+            {% for slot in slots %}
+                <li>{{ slot.start }} - {{ slot.end }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Closed</p>
+        {% endif %}
+    {% empty %}
+        <p>No hours set.</p>
+    {% endfor %}
+    <a href="{% url 'opening-hours-update' opening_hours.id %}" class="btn">Edit</a>
+    <a href="{% url 'opening-hours-list' %}" class="btn">Back to List</a>
+{% endblock %}

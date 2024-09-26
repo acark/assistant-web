@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Details{% endblock %}
+
+
+
+
+
+{% block content %}
+    <h1>Customer Details</h1>
+    <p><strong>Company Name:</strong> {{ customer.user }}</p>
+    <p><strong>Phone Number:</strong> {{ customer.phone_number }}</p>
+    <p><strong>Address:</strong> {{ customer.address }}</p>
+    <a href="{% url 'customer-update' customer.id %}" class="btn">Edit</a>
+    <a href="{% url 'customer-list' %}" class="btn">Back to List</a>
+{% endblock %}

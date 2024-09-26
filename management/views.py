@@ -171,7 +171,7 @@ from openai_api.openai_client import InformationExtractor
 from typing import List, Dict, Any
 from datetime import datetime
 from restaurants.models import Restaurant
-from .restaurant_manager import restaurant_manager
+from restaurants.restaurant_manager import restaurant_manager
 
 ## CALL HANDLER
 class CallHandler:
@@ -217,7 +217,7 @@ class CallSession:
                 assistant_prompt={
                     "task": "Extract booking date and time",
                     "format": {
-                        "booking_datetime": "YYYY-MM-DD HH:MM:SS"
+                        "booking_datetime": "YYYY-MM-DD HH:MM"
                     }
                 },
                 model="gpt-3.5-turbo"
@@ -358,35 +358,36 @@ def process_gateway_request(request):
     if request.method == 'POST':
         json_data = request.body.decode('utf-8')
         data = json.loads(json_data)
-        
-        # Extract the call_id from the incoming data
-        call_id = data['message']['toolCalls'][0]['id']
-        
-        # Create or get the session
-        session = session_manager.get_or_create_session(call_id)
-        
-        # Set the restaurant_id in the session data
-        # You'll need to determine how to get the restaurant_id from the incoming data
-        # This is just an example, adjust according to your actual data structure
-        restaurant_id = data.get('restaurant_id') # TODO: This restaurant_id is not in the data! And it shoul be handled in when client signed in and create the assistant!
-        if restaurant_id:
-            session.data['restaurant_id'] = restaurant_id
-        
-        try:
-            # Update the session with the new data, process it, and send to ngrok
-            ngrok_response = session_manager.update_session(call_id, json_data)
+        if data['message']['type'] == "tool-calls":
+            # Extract the call_id from the incoming data
+            call_id = data['message']['toolCalls'][0]['id']
             
-            return JsonResponse({
-                "message": "Received POST request at root, processed data, and sent to ngrok",
-                "call_id": call_id,
-                "ngrok_response": ngrok_response
-            })
-        except Exception as e:
-            logger.error(f"Error processing request for call_id {call_id}: {str(e)}")
-            return JsonResponse({
-                "error": "An error occurred while processing the request",
-                "call_id": call_id
-            }, status=500)
+            # Create or get the session
+            session = session_manager.get_or_create_session(call_id)
+            
+            # Set the restaurant_id in the session data
+            # You'll need to determine how to get the restaurant_id from the incoming data
+            # This is just an example, adjust according to your actual data structure
+            restaurant_id = data['message']['artifacts']['assistant']['id'] # Restaurant_id should be assistant id ?
+            
+            if restaurant_id:
+                session.data['restaurant_id'] = restaurant_id
+            
+            try:
+                # Update the session with the new data, process it, and send to ngrok
+                ngrok_response = session_manager.update_session(call_id, json_data)
+                
+                return JsonResponse({
+                    "message": "Received POST request at root, processed data, and sent to ngrok",
+                    "call_id": call_id,
+                    "ngrok_response": ngrok_response
+                })
+            except Exception as e:
+                logger.error(f"Error processing request for call_id {call_id}: {str(e)}")
+                return JsonResponse({
+                    "error": "An error occurred while processing the request",
+                    "call_id": call_id
+                }, status=500)
     
     return JsonResponse({"message": "Hello from Django root!"})
 
@@ -399,42 +400,3 @@ def call_listen(request):
     response = requests.get(project_settings.NGROK_URL)
     return JsonResponse({"body": response.body})
 
-### PROXY HANDLER TODO sil bunu?
-from django.views import View
-class ProxyView(View):
-    def dispatch(self, request, *args, **kwargs):
-        # Determine the target URL
-        path = request.get_full_path()
-        if request.headers.get('X-Should-Route-To'):
-            url = request.headers['X-Should-Route-To'] + path
-        else:
-            url = f'http://localhost:8081{path}'
-
-        # Forward the request
-        method = request.method.lower()
-        request_kwargs = {
-            'method': method,
-            'url': url,
-            'headers': {key: value for (key, value) in request.headers.items() if key.lower() != 'host'},
-            'data': request.body,
-            'cookies': request.COOKIES,
-            'allow_redirects': False,
-        }
-
-        if method == 'get':
-            request_kwargs['params'] = request.GET
-
-        response = requests.request(**request_kwargs)
-
-        # Prepare and send the response
-        django_response = HttpResponse(
-            content=response.content,
-            status=response.status_code,
-        )
-
-        excluded_headers = ['content-encoding', 'transfer-encoding', 'connection']
-        for header, value in response.headers.items():
-            if header.lower() not in excluded_headers:
-                django_response[header] = value
-
-        return django_response

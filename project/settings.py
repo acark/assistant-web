@@ -47,6 +47,9 @@ CSRF_TRUSTED_ORIGINS = ['https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app']
 
 WSGI_APPLICATION = 'project.wsgi.application'
 NGROK_URL = 'https://dd34-2a01-4f8-c2c-aa3c-00-1.ngrok-free.app'
+
+
+
 INSTALLED_APPS = [
     'restaurants',
     'management',
@@ -75,7 +78,9 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'templates'
+            BASE_DIR / 'templates',
+            os.path.join(BASE_DIR, 'restaurants', 'templates'),
+            os.path.join(BASE_DIR, 'management', 'templates')
             ],
         'APP_DIRS': True,
         'OPTIONS': {
