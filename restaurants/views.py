@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views import View
 from django.urls import reverse_lazy
 from .models import Customer, Restaurant, Table, OpeningHours, Reservation, Subscription, Billing
 from .forms import OpeningHoursForm
@@ -96,43 +97,91 @@ class OpeningHoursListView(ListView):
     model = OpeningHours
     template_name = 'opening_hours_list.html'
     context_object_name = 'opening_hours'
+    paginate_by = 10
 
+    def get_queryset(self):
+        queryset = OpeningHours.objects.select_related('restaurant').all()
+        print(queryset)
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(Q(restaurant__name__icontains=search_query))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '')
+        return context
+    
+    
+    
 class OpeningHoursDetailView(DetailView):
     model = OpeningHours
     template_name = 'opening_hours_detail.html'
     context_object_name = 'opening_hours'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        opening_hours = self.object
+        
+        # Create a list of days with their corresponding hours
+        days_hours = []
+        for day, day_name in OpeningHours.DAYS_OF_WEEK:
+            hours = opening_hours.hours.get(day, [])
+            formatted_hours = [f"{slot['start']} - {slot['end']}" for slot in hours]
+            days_hours.append({
+                'day': day_name,
+                'hours': formatted_hours or ['Closed']
+            })
+        
+        context['days_hours'] = days_hours
+        return context
 
 class OpeningHoursCreateView(CreateView):
     model = OpeningHours
     form_class = OpeningHoursForm
     template_name = 'opening_hours_form.html'
     success_url = reverse_lazy('opening-hours-list')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['is_create'] = True
-        return context
-
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.object:
+            for day, slots in self.object.hours.items():
+                for i, slot in enumerate(slots):
+                    initial[f'{day}_start_{i}'] = slot['start']
+                    initial[f'{day}_end_{i}'] = slot['end']
+        return initial
     def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, 'Opening hours created successfully.')
-        return response
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, 'Opening hours created successfully.')
+            return response
+        except Exception as e:
+            messages.error(self.request, f'An error occurred: {str(e)}')
+            return self.form_invalid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'There was an error creating the opening hours. Please check the form and try again.')
-        print(self.request.__dict__)
+        print("Form is invalid")  # Debug print
+        print(f"Form errors: {form.errors}")  # Debug print
+        messages.error(self.request, 'There was an error creating the opening hours')
         return super().form_invalid(form)
-    
+
+    def post(self, request, *args, **kwargs):
+        print("POST request received")  # Debug print
+        return super().post(request, *args, **kwargs)
+
 class OpeningHoursUpdateView(UpdateView):
     model = OpeningHours
     form_class = OpeningHoursForm
     template_name = 'opening_hours_form.html'
     success_url = reverse_lazy('opening-hours-list')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['is_create'] = False
-        return context
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.object:
+            for day, slots in self.object.hours.items():
+                for i, slot in enumerate(slots):
+                    initial[f'{day}_start_{i}'] = slot['start']
+                    initial[f'{day}_end_{i}'] = slot['end']
+        return initial
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -140,9 +189,13 @@ class OpeningHoursUpdateView(UpdateView):
         return response
 
     def form_invalid(self, form):
-        messages.error(self.request, 'There was an error updating the opening hours. Please check the form and try again.')
+        messages.error(self.request, 'There was an error updating the opening hours..')
         return super().form_invalid(form)
-    
+
+
+
+
+
 class OpeningHoursDeleteView(DeleteView):
     model = OpeningHours
     template_name = 'opening_hours_confirm_delete.html'

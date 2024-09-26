@@ -7,75 +7,75 @@
     <h1>
     {% if form.instance.pk %}
     Edit Opening Hours
-        {% else %}
+    {% else %}
     Add Opening Hours
     {% endif %}
     </h1>
-    <form method="post">
+    <form method="post" id="opening-hours-form">
         {% csrf_token %}
         {{ form.non_field_errors }}
         <div class="fieldWrapper">
             {{ form.restaurant.errors }}
-            <label for="{{ form.restaurant.id_for_label }}"> Restaurant:</label>
+            <label for="{{ form.restaurant.id_for_label }}">Restaurant:</label>
             {{ form.restaurant }}
         </div>
 
         <h2>Hours</h2>
 
-        {% for day in form.instance.DAYS_OF_WEEK %}
+        {% for day, day_name in form.instance.DAYS_OF_WEEK %}
             <fieldset>
-                <legend>{{ day.1 }}</legend>
-                <div class="time-slots" id="{{ day.0 }}-slots">
-                    {% if form.instance.hours %}
-                        {% for slot in form.instance.hours|get_item:day.0 %}
-                            <div class="time-slot">
-                                <input type="time" name="{{ day.0 }}_start" value="{{ slot.start }}">
-                                <input type="time" name="{{ day.0 }}_end" value="{{ slot.end }}">
-                                <button type="button" class="remove-slot">Remove</button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                <legend>{{ day_name }}</legend>
+                <div class="time-slots" id="{{ day }}-slots">
+                    {% for i in "0123456" %}
+                        {% with start_field=day|add:'_start_'|add:i end_field=day|add:'_end_'|add:i %}
+                            {% if form|get_field:start_field and form|get_field:end_field %}
+                                <div class="time-slot">
+                                    {{ form.errors|get_item:start_field }}
+                                    {{ form.errors|get_item:end_field }}
+                                    <label for="id_{{ start_field }}">Start:</label>
+                                    {{ form|get_field:start_field }}
+                                    <label for="id_{{ end_field }}">End:</label>
+                                    {{ form|get_field:end_field }}
+                                    {% if not forloop.first %}
+                                        <button type="button" class="remove-slot">Remove</button>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 </div>
-                <button type="button" class="add-slot" data-day="{{ day.0 }}">Add Time Slot</button>
-                <button type="button" class="remove-day">Remove</button>
+                <button type="button" class="add-slot" data-day="{{ day }}">Add Time Slot</button>
             </fieldset>
         {% endfor %}
+        {{ form.hours }}
         <button type="submit" class="btn">Save</button>
     </form>
     <a href="{% url 'opening-hours-list' %}">Cancel</a>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.add-slot').forEach(button => {
-                button.addEventListener('click', function() {
-                    const day = this.dataset.day;
+            const form = document.getElementById('opening-hours-form');
+
+            form.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-slot')) {
+                    const day = e.target.dataset.day;
                     const slotsContainer = document.getElementById(`${day}-slots`);
+                    const index = slotsContainer.children.length;
+
                     const newSlot = document.createElement('div');
                     newSlot.className = 'time-slot';
                     newSlot.innerHTML = `
-                        <input type="time" name="${day}_start">
-                        <input type="time" name="${day}_end">
+                        <label for="id_${day}_start_${index}">Start:</label>
+                        <input type="time" name="${day}_start_${index}" id="id_${day}_start_${index}" class="start-time">
+                        <label for="id_${day}_end_${index}">End:</label>
+                        <input type="time" name="${day}_end_${index}" id="id_${day}_end_${index}" class="end-time">
                         <button type="button" class="remove-slot">Remove</button>
                     `;
                     slotsContainer.appendChild(newSlot);
-                });
-            });
-
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.className == 'remove-slot') {
-                    e.target.parentNode.remove();
+                } else if (e.target.classList.contains('remove-slot')) {
+                    e.target.closest('.time-slot').remove();
                 }
             });
-
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.className == 'remove-day') {
-                    e.target.parentNode.remove();
-                }
-            });
-
-
-            
         });
     </script>
-    
 {% endblock %}

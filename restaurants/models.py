@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 import json
 from zoneinfo import available_timezones
 from zoneinfo import ZoneInfo
-
+from datetime import datetime
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20)
@@ -70,40 +70,26 @@ class OpeningHours(models.Model):
     def __str__(self):
         return f"Opening Hours for {self.restaurant.name}"
 
-    def set_hours(self, day, slots):
+    def set_hours(self, day_hours):
+        for day, slots in day_hours.items():
+            print(day)
+            if day not in dict(self.DAYS_OF_WEEK):
+                raise ValueError("Invalid day")
+            for slot in slots:
+                if 'start' not in slot or 'end' not in slot:
+                    raise ValueError("Each slot must have 'start' and 'end' times")
         
-        """
-        example: 
-        monday_slots = [
-                {'start': '09:00', 'end': '12:00'},
-                {'start': '12:00', 'end': '15:00'},
-                {'start': '18:00', 'end': '22:00'}
-            ]
-            opening_hours.set_hours('monday', monday_slots)
-        """
-        if day not in dict(self.DAYS_OF_WEEK):
-            raise ValueError("Invalid day")
-        
-        for slot in slots:
-            if 'start' not in slot or 'end' not in slot:
-                raise ValueError("Each slot must have 'start' and 'end' times")
-        
-        current_hours = self.hours.copy()
-        current_hours[day] = slots
-        self.hours = current_hours
-        self.save()
-        print('Saved!')
+        for day,slots in day_hours.items():
+            current_hours = self.hours.copy()
+            current_hours[day] = slots
+            self.hours = current_hours
+            self.save()
+            print('Saved!')
 
     def get_hours(self, day):
         return self.hours.get(day, [])
 
     def is_open_at(self, datetime):
-        
-        """
-        is_open = opening_hours.is_open_at(datetime(2024, 9, 20, 13, 30))  # Check if open on Sept 9, 2024  13:30
-        print(f"Restaurant is {'open' if is_open else 'closed'} at the specified time.")
-        
-        """
         day = datetime.strftime('%A').lower()
         time = datetime.time()
         day_slots = self.get_hours(day)
@@ -117,7 +103,6 @@ class OpeningHours(models.Model):
 
     @staticmethod
     def parse_time(time_str):
-        from datetime import datetime
         return datetime.strptime(time_str, "%H:%M").time()
 
     def clean(self):
@@ -133,10 +118,9 @@ class OpeningHours(models.Model):
                     raise ValidationError(f"End time must be after start time for {day}: {slot}")
 
     def get_hours_for_day(self, day_name):
-        start = getattr(self, f'{day_name.lower()}_start')
-        end = getattr(self, f'{day_name.lower()}_end')
-        if start and end:
-            return f"{start.strftime('%I:%M %p')} - {end.strftime('%I:%M %p')}"
+        slots = self.get_hours(day_name.lower())
+        if slots:
+            return ", ".join([f"{slot['start']} - {slot['end']}" for slot in slots])
         return "Closed"
 
 class Reservation(models.Model): # TODO: We need to check query date is avaliablty for the table.

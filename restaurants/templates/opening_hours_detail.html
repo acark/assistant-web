@@ -1,23 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %} Opening Hours Detail{% endblock %}
+{% block title %}{{ opening_hours.restaurant.name }} - Opening Hours{% endblock %}
 
 {% block content %}
     <h1>Opening Hours for {{ opening_hours.restaurant.name }}</h1>
-    {% for day, slots in opening_hours.hours.items %}
-        <h2>{{ day|title }}</h2>
-        {% if slots %}
-            <ul>
-            {% for slot in slots %}
-                <li>{{ slot.start }} - {{ slot.end }}</li>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Hours</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in days_hours %}
+                <tr>
+                    <td>{{ day.day }}</td>
+                    <td>
+                        {% if day.hours|length > 0 %}
+                            {% for hours in day.hours %}
+                                {{ hours }}{% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Closed
+                        {% endif %}
+                    </td>
+                </tr>
             {% endfor %}
-            </ul>
-        {% else %}
-            <p>Closed</p>
-        {% endif %}
-    {% empty %}
-        <p>No hours set.</p>
-    {% endfor %}
-    <a href="{% url 'opening-hours-update' opening_hours.id %}" class="btn">Edit</a>
-    <a href="{% url 'opening-hours-list' %}" class="btn">Back to List</a>
+        </tbody>
+    </table>
+
+    <div class="mt-4">
+        <a href="{% url 'opening-hours-update' opening_hours.id %}" class="btn btn-warning">Edit</a>
+        <a href="{% url 'opening-hours-delete' opening_hours.id %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'opening-hours-list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
 {% endblock %}
