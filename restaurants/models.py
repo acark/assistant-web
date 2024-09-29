@@ -70,24 +70,57 @@ class OpeningHours(models.Model):
     def __str__(self):
         return f"Opening Hours for {self.restaurant.name}"
 
-    def set_hours(self, day_hours):
-        for day, slots in day_hours.items():
-            print(day)
-            if day not in dict(self.DAYS_OF_WEEK):
-                raise ValueError("Invalid day")
-            for slot in slots:
-                if 'start' not in slot or 'end' not in slot:
-                    raise ValueError("Each slot must have 'start' and 'end' times")
+    def clean(self):
         
-        for day,slots in day_hours.items():
-            current_hours = self.hours.copy()
-            current_hours[day] = slots
-            self.hours = current_hours
-            self.save()
-            print('Saved!')
+        if not isinstance(self.hours, dict):
+            raise ValidationError("Hours must be a dictionary")
+
+        for day, slots in self.hours.items():
+            if day not in dict(self.DAYS_OF_WEEK):
+                raise ValidationError(f"Invalid day: {day}")
+            
+            if slots == "closed":
+                continue
+            
+            if not isinstance(slots, list):
+                raise ValidationError(f"Slots for {day} must be a list or 'closed'")
+            
+            for slot in slots:
+                if not isinstance(slot, dict) or 'start' not in slot or 'end' not in slot:
+                    raise ValidationError(f"Invalid slot format for {day}")
+    def set_hours(self, day, slots):
+        if day not in dict(self.DAYS_OF_WEEK):
+            raise ValueError(f"Invalid day: {day}")
+        
+        if slots == "closed":
+            self.hours[day] = "closed"
+        elif isinstance(slots, list):
+            self.hours[day] = slots
+        else:
+            raise ValueError("Slots must be a list of dictionaries or 'closed'")
+        
+        self.save()
 
     def get_hours(self, day):
+        if day not in dict(self.DAYS_OF_WEEK):
+            raise ValueError(f"Invalid day: {day}")
         return self.hours.get(day, [])
+    
+    
+    def update_hours_from_cleaned_data(self, cleaned_data):
+        if 'hours' not in cleaned_data:
+            raise ValueError("Cleaned data does not contain 'hours' key")
+
+        new_hours = cleaned_data['hours']
+        for day, slots in new_hours.items():
+            if day not in dict(self.DAYS_OF_WEEK):
+                raise ValueError(f"Invalid day in cleaned data: {day}")
+            if not slots:
+                self.hours[day] = ["closed"]
+            else:
+                self.hours[day] = slots
+
+        self.save()
 
     def is_open_at(self, datetime):
         day = datetime.strftime('%A').lower()
@@ -105,17 +138,6 @@ class OpeningHours(models.Model):
     def parse_time(time_str):
         return datetime.strptime(time_str, "%H:%M").time()
 
-    def clean(self):
-        for day, slots in self.hours.items():
-            if day not in dict(self.DAYS_OF_WEEK):
-                raise ValidationError(f"Invalid day: {day}")
-            for slot in slots:
-                if 'start' not in slot or 'end' not in slot:
-                    raise ValidationError(f"Invalid slot for {day}: {slot}")
-                start = self.parse_time(slot['start'])
-                end = self.parse_time(slot['end'])
-                if start >= end:
-                    raise ValidationError(f"End time must be after start time for {day}: {slot}")
 
     def get_hours_for_day(self, day_name):
         slots = self.get_hours(day_name.lower())

@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% load restaurant_filters %}
 
-{% block title %}{% if form.instance.pk %}Edit Opening Hours{% else %}Add Opening Hours{% endif %}{% endblock %}
+{% block title %}
+    {% if form.instance.pk %}
+        Edit Opening Hours
+    {% else %}
+        Add Opening Hours
+    {% endif %}
+{% endblock %}
 
 {% block content %}
     <h1>
@@ -23,58 +29,90 @@
         <h2>Hours</h2>
 
         {% for day, day_name in form.instance.DAYS_OF_WEEK %}
-            <fieldset>
-                <legend>{{ day_name }}</legend>
-                <div class="time-slots" id="{{ day }}-slots">
-                    {% for i in "0123456" %}
-                        {% with start_field=day|add:'_start_'|add:i end_field=day|add:'_end_'|add:i %}
-                            {% if form|get_field:start_field and form|get_field:end_field %}
-                                <div class="time-slot">
-                                    {{ form.errors|get_item:start_field }}
-                                    {{ form.errors|get_item:end_field }}
-                                    <label for="id_{{ start_field }}">Start:</label>
-                                    {{ form|get_field:start_field }}
-                                    <label for="id_{{ end_field }}">End:</label>
-                                    {{ form|get_field:end_field }}
-                                    {% if not forloop.first %}
-                                        <button type="button" class="remove-slot">Remove</button>
-                                    {% endif %}
-                                </div>
+        <fieldset>
+            <legend>{{ day_name }}</legend>
+            <div class="day-closed">
+                {% with closed_field=day|add:'_closed' %}
+                    {% with field=form|get_field:closed_field %}
+                        {{ field.errors }}
+                        <label for="{{ field.id_for_label }}">
+                            <input type="checkbox" name="{{ field.html_name }}" id="{{ field.auto_id }}"
+                                {% if field.value %} checked {% endif %}>
+                            Closed
+                            
+                        </label>
+                    {% endwith %}
+                {% endwith %}
+            </div>
+            <div class="time-slots" id="{{ day }}-slots">
+                {% for i in "0" %}
+                    {% with start_field=day|add:'_start_'|add:i end_field=day|add:'_end_'|add:i %}
+                        <div class="time-slot" {% if forloop.counter0 > 0 %}style="display: none;"{% endif %}>
+                            <label for="id_{{ start_field }}">Start:</label>
+                            {{ form|get_field:start_field }}
+                            <label for="id_{{ end_field }}">End:</label>
+                            {{ form|get_field:end_field }}
+                            {% if not forloop.first %}
+                                <button type="button" class="remove-slot">Remove</button>
                             {% endif %}
-                        {% endwith %}
-                    {% endfor %}
-                </div>
-                <button type="button" class="add-slot" data-day="{{ day }}">Add Time Slot</button>
-            </fieldset>
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+                <button type="button" class="add-slot" data-day="{{ day }}">Add Slot</button>
+            </div>
+        </fieldset>
         {% endfor %}
         {{ form.hours }}
         <button type="submit" class="btn">Save</button>
     </form>
+
     <a href="{% url 'opening-hours-list' %}">Cancel</a>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('opening-hours-form');
 
+            form.addEventListener('change', function(e) {
+                if (e.target.type === 'checkbox' && e.target.id.endsWith('_closed')) {
+                    const day = e.target.id.replace('id_', '').replace('_closed', '');
+                    const slotsContainer = document.getElementById(`${day}-slots`);
+                    slotsContainer.style.display = e.target.checked ? 'none' : 'block';
+                }
+            });
+
             form.addEventListener('click', function(e) {
                 if (e.target.classList.contains('add-slot')) {
                     const day = e.target.dataset.day;
                     const slotsContainer = document.getElementById(`${day}-slots`);
-                    const index = slotsContainer.children.length;
-
-                    const newSlot = document.createElement('div');
-                    newSlot.className = 'time-slot';
-                    newSlot.innerHTML = `
-                        <label for="id_${day}_start_${index}">Start:</label>
-                        <input type="time" name="${day}_start_${index}" id="id_${day}_start_${index}" class="start-time">
-                        <label for="id_${day}_end_${index}">End:</label>
-                        <input type="time" name="${day}_end_${index}" id="id_${day}_end_${index}" class="end-time">
-                        <button type="button" class="remove-slot">Remove</button>
-                    `;
-                    slotsContainer.appendChild(newSlot);
+                    const existingSlots = Array.from(slotsContainer.querySelectorAll('.time-slot'));
+                    
+                    if (hiddenSlots.length > 0) { // Ensure there are hidden slots
+                        hiddenSlots[0].style.display = 'block'; // Show the first hidden slot
+                    } else {
+                        // Optionally, you can add a new slot dynamically if all are visible
+                        const newSlot = document.createElement('div');
+                        newSlot.className = 'time-slot';
+                        newSlot.innerHTML = `
+                            <label for="id_${day}_start_new">Start:</label>
+                            <input type="time" name="${day}_start_new" id="id_${day}_start_new">
+                            <label for="id_${day}_end_new">End:</label>
+                            <input type="time" name="${day}_end_new" id="id_${day}_end_new">
+                            <button type="button" class="remove-slot">Remove</button>
+                        `;
+                        slotsContainer.appendChild(newSlot);
+                    }
                 } else if (e.target.classList.contains('remove-slot')) {
-                    e.target.closest('.time-slot').remove();
+                    const slot = e.target.closest('.time-slot');
+                    slot.style.display = 'none';
+                    slot.querySelectorAll('input[type="time"]').forEach(input => input.value = '');
                 }
+            });
+
+            // Initialize closed state
+            form.querySelectorAll('input[type="checkbox"][id$="_closed"]').forEach(checkbox => {
+                const day = checkbox.id.replace('id_', '').replace('_closed', '');
+                const slotsContainer = document.getElementById(`${day}-slots`);
+                slotsContainer.style.display = checkbox.checked ? 'none' : 'block';
             });
         });
     </script>

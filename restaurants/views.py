@@ -122,16 +122,37 @@ class OpeningHoursDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         opening_hours = self.object
-        
+
         # Create a list of days with their corresponding hours
         days_hours = []
         for day, day_name in OpeningHours.DAYS_OF_WEEK:
             hours = opening_hours.hours.get(day, [])
-            formatted_hours = [f"{slot['start']} - {slot['end']}" for slot in hours]
-            days_hours.append({
-                'day': day_name,
-                'hours': formatted_hours or ['Closed']
-            })
+
+            if isinstance(hours, str) and hours == "closed":  # Check if hours is a string and equals "closed"
+                days_hours.append({
+                    'day': day_name,
+                    'hours': ['Closed']
+                })
+            elif isinstance(hours, list):  # Ensure hours is a list before processing
+                if not hours:  # Check if the list is empty
+                    days_hours.append({
+                        'day': day_name,
+                        'hours': ['Closed']
+                    })
+                else:
+                    formatted_hours = []
+                    for slot in hours:
+                        if isinstance(slot, dict) and 'start' in slot and 'end' in slot:
+                            formatted_hours.append(f"{slot['start']} - {slot['end']}")
+                    days_hours.append({
+                        'day': day_name,
+                        'hours': formatted_hours or ['Closed']
+                    })
+            else:
+                days_hours.append({
+                    'day': day_name,
+                    'hours': ['Closed']  # Fallback for unexpected cases
+                })
         
         context['days_hours'] = days_hours
         return context
@@ -159,13 +180,10 @@ class OpeningHoursCreateView(CreateView):
             return self.form_invalid(form)
 
     def form_invalid(self, form):
-        print("Form is invalid")  # Debug print
-        print(f"Form errors: {form.errors}")  # Debug print
         messages.error(self.request, 'There was an error creating the opening hours')
         return super().form_invalid(form)
 
     def post(self, request, *args, **kwargs):
-        print("POST request received")  # Debug print
         return super().post(request, *args, **kwargs)
 
 class OpeningHoursUpdateView(UpdateView):
@@ -174,27 +192,34 @@ class OpeningHoursUpdateView(UpdateView):
     template_name = 'opening_hours_form.html'
     success_url = reverse_lazy('opening-hours-list')
 
-    def get_initial(self):
-        initial = super().get_initial()
-        if self.object:
-            for day, slots in self.object.hours.items():
-                for i, slot in enumerate(slots):
-                    initial[f'{day}_start_{i}'] = slot['start']
-                    initial[f'{day}_end_{i}'] = slot['end']
-        return initial
-
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, 'Opening hours updated successfully.')
         return response
 
     def form_invalid(self, form):
-        messages.error(self.request, 'There was an error updating the opening hours..')
+        messages.error(self.request, 'There was an error updating the opening hours.')
         return super().form_invalid(form)
-
-
-
-
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.object:
+            for day, slots in self.object.hours.items():
+                if slots == 'closed':
+                    initial[f'{day}_closed'] = True
+                elif isinstance(slots, list):  # Ensure slots is a list
+                    initial[f'{day}_closed'] = False  # Set to False if not closed
+                    for i, slot in enumerate(slots):
+                        if isinstance(slot, dict) and 'start' in slot and 'end' in slot:
+                            initial[f'{day}_start_{i}'] = slot['start']
+                            initial[f'{day}_end_{i}'] = slot['end']
+                        else:
+                            # Handle unexpected slot structure
+                            initial[f'{day}_start_{i}'] = None
+                            initial[f'{day}_end_{i}'] = None
+                else:
+                    # Handle unexpected slots structure
+                    initial[f'{day}_closed'] = True  # Default to closed if structure is unexpected
+        return initial
 
 class OpeningHoursDeleteView(DeleteView):
     model = OpeningHours

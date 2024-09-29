@@ -42,77 +42,96 @@ class ReservationForm(forms.ModelForm):
             instance.save()
         return instance
     
-
+from datetime import datetime, time
 class OpeningHoursForm(forms.ModelForm):
+    
     class Meta:
         model = OpeningHours
         fields = ['restaurant']
-        widgets = {
-            'hours': forms.HiddenInput(),
-        }
+        # widgets = {
+        #     'hours': forms.HiddenInput(),
+        # }
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.day_fields = {}
 
         for day, day_name in OpeningHours.DAYS_OF_WEEK:
-            self.day_fields[day] = []
-            self.fields[f'{day}_start_0'] = forms.TimeField(
-                required=False,
-                widget=forms.TimeInput(attrs={'type': 'time'}),
-                label=f"{day_name} start 0"
-            )
-            self.fields[f'{day}_end_0'] = forms.TimeField(
-                required=False,
-                widget=forms.TimeInput(attrs={'type': 'time'}),
-                label=f"{day_name} end 0"
-            )
+            self.fields[f'{day}_closed'] = forms.BooleanField(required=False, label=f"{day} closed", initial=True)
 
-        if self.instance.pk and self.instance.hours:
+            for i in range(7): # assuming max 7 slots per day
+                self.fields[f'{day}_start_{i}'] = forms.TimeField(
+                    required=False,
+                    widget=forms.TimeInput(attrs={'type': 'time'}),
+                    label=f"{day_name} start {i}",
+                    initial= '15:00'
+                )
+                
+                self.fields[f'{day}_end_{i}'] = forms.TimeField(
+                    required=False,
+                    widget=forms.TimeInput(attrs={'type': 'time'}),
+                    label=f"{day_name} end {i}",
+                    initial = '19:00'
+                )
+                
+        if self.instance.pk:  # Check if updating an existing instance
             for day, slots in self.instance.hours.items():
-                for i, slot in enumerate(slots):
-                    self.fields[f'{day}_start_{i}'].initial = slot['start']
-                    self.fields[f'{day}_end_{i}'].initial = slot['end']
+                if slots[0] == 'closed':
+                    self.fields[f'{day}_closed'].initial = True  # Checkbox should be checked
+                elif isinstance(slots, list) and slots[0] != 'closed':
+                    self.fields[f'{day}_closed'].initial = False  # Checkbox should be unchecked
+                    for i, slot in enumerate(slots):
+                        if isinstance(slot, dict) and 'start' in slot and 'end' in slot:
+                            self.fields[f'{day}_start_{i}'].initial = slot['start']
+                            self.fields[f'{day}_end_{i}'].initial = slot['end']
+                        else:
+                            # Handle unexpected slot structure
+                            self.fields[f'{day}_start_{i}'].initial = None
+                            self.fields[f'{day}_end_{i}'].initial = None
+                            raise ValueError
 
     def clean(self):
         cleaned_data = super().clean()
         hours = {}
-        for day, day_name in OpeningHours.DAYS_OF_WEEK:
-            day_slots = []
-            slot_index = 0
-            while True:
-                start = cleaned_data.get(f'{day}_start_{slot_index}')
-                end = cleaned_data.get(f'{day}_end_{slot_index}')
-
-                if not start and not end:
-                    break  # No more slots for this day
-                
-                if start and end:
-                    if start >= end:
-                        self.add_error(f'{day}_start_{slot_index}', "End time must be after start time")
-                    else:
-                        day_slots.append({
-                            'start': start.strftime('%H:%M'),
-                            'end': end.strftime('%H:%M')
-                        })
-                elif start or end:
-                    self.add_error(f'{day}_start_{slot_index}', "Both start and end times must be provided")
-                
-                slot_index += 1
+        closed_days = []
+        for field_name, value in cleaned_data.items():
+            if field_name == "restaurant" or not value: continue
             
-            if day_slots:
-                hours[day] = day_slots
+            if field_name.endswith('_closed'):
+                day = field_name[:-7]  # Remove '_closed' from the end
+                if value:  # If closed is True
+                    closed_days.append(day)
+                    continue
+            if field_name.split('_')[0] in closed_days:
+                continue
+            
+            day, slot_type, slot_num = field_name.rsplit('_', 2)
+            slot_num = int(slot_num)
+            if day not in hours:
+                hours[day] = []
+                
+                
+            while len(hours[day]) <= slot_num:
+                hours[day].append({'start': None, 'end': None})
+            
+            hours[day][slot_num][slot_type] = value.strftime('%H:%M')
+            
+              
+         # Remove empty slots
+        for day in hours:
+            if day in closed_days:
+                hours[day] = ['closed']
+            else:
+                hours[day] = [slot for slot in hours[day] if slot['start'] and slot['end']]
 
         cleaned_data['hours'] = hours
-        print(cleaned_data['hours'])
+    
         return cleaned_data
 
     def save(self, commit=True):
-        print('here')
+        
         instance = super().save(commit=False)
-        
-        instance.set_hours(self.clean()['hours'])
-        
+
         if commit:
             instance.save()
+            instance.update_hours_from_cleaned_data(self.cleaned_data)
         return instance

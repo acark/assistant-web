@@ -18,13 +18,17 @@ from django.contrib import admin
 from django.urls import path,include
 from management import views
 
-
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.process_gateway_request, name='root'), ## Localhost purpose only. It needs to be changed to something else when we deploy
     path("management/", include('management.urls')),
-    path('restaurants/',include('restaurants.urls'))]
+    path('restaurants/',include('restaurants.urls'))
+    ]
+
+
+urlpatterns.extend(debug_toolbar_urls())
 
 
 

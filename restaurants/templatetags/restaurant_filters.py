@@ -7,11 +7,8 @@ register = template.Library()
 def get_item(dictionary, key):
     if dictionary is None:
         return None
-    
-    # Split the key into parts for nested access
     keys = key.split('.')
     
-    # Traverse the dictionary
     for k in keys:
         if isinstance(dictionary, dict):
             dictionary = dictionary.get(k)
@@ -28,10 +25,6 @@ def get_item(dictionary, key):
 
 @register.filter
 def get_slot_time(hours, day_slot):
-    """
-    Get the time for a specific day and slot from hours data.
-    Usage: {{ form.initial.hours|get_slot_time:'monday.0.start' }}
-    """
     day, slot_index, time_type = day_slot.split('.')
     try:
         return hours.get(day, [])[int(slot_index)][time_type]
@@ -40,16 +33,7 @@ def get_slot_time(hours, day_slot):
 
 @register.filter
 def get_field(form, field_name):
-    """
-    Get a form field by its name.
-    Usage: {{ form|get_field:'monday_start_0' }}
-    """
-    return form[field_name]
-
-@register.filter
-def get_field(form, field_name):
-    """
-    Get a form field by its name.
-    Usage: {{ form|get_field:'monday_start_0' }}
-    """
-    return form[field_name]
+    try:
+        return form[field_name]
+    except KeyError:
+        return None
