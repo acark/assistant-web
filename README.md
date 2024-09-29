@@ -1,7 +1,7 @@
 # AI Voice Agent for reservations powered by Vapi.ai
 
 ## Description
-This Django project allows users to manage AI voice assistant for their restaurant.The application provides a user-friendly interface for managing reservation process for restaurant's owner.
+This Django project allows users to manage AI voice assistant for restaurant reservation scenario.The application provides a user-friendly interface for managing reservation process for restaurant's owner.
 
 ## Features
 
